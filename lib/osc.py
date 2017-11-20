@@ -473,14 +473,14 @@ class ISC(object):
             data = self._isc_connection(method=method, url=url, body=body, action=action, headers=headers)
             if data is None:
                 self._output.log_error("Exit createOStackVC -- Failed to create new VC")
-                ##return(None)
+                return(None)
             else:
                 vcid = data['id']
                 self._output.log_debug("Exit createOStackVC -- Created VC Id: \"%s\"" %(vcid))
-                #return(vcid)
+                return(vcid)
             pass
 
-        return self._wait_for_job(data)
+        # VC job is not spawn for create or update - there is nothing to check
     pass
 
 
@@ -551,8 +551,6 @@ class ISC(object):
 
             return (vcid)
     pass
-
-
 
     def getManagerConnectorByName(self, name):
         mcDict = self.getManagerConnectors()
