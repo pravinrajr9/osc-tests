@@ -54,7 +54,7 @@ Prepare variables
     ${sg1-network-mbr}=         get sgmbr    ${sg1-name}     ${sg-test-net}   ${sg-network-member-type}  ${ds-region}
 
     ${sg-subnet-mbr}=          get sgmbr    ${sg-name}      ${sg-subnet-member-name}    ${sg-subnet-member-type}   ${ds-region}
-    ${sg-network-mul-mbrs}=         get sgmbr    ${sg-name}      ${sg-networks}   ${sg-network-member-type}  ${ds-region}
+    #${sg-network-mul-mbrs}=         get sgmbr    ${sg-name}      ${sg-networks}   ${sg-network-member-type}  ${ds-region}
     ${sg-vm-mul-mbrs}=         get sgmbr    ${sg-name}      ${sg-vms}   ${sg-vm-member-type}  ${ds-region}
 
     set global variable   ${osc}
@@ -179,37 +179,6 @@ Test 8 Add VM SG Member
 
 
 
-Test 9 Add NETWORK SG Member
-    ##                                        start_clean,   finish_clean,   obj_type,   field_type,   field,      obj,                osc,    log)
-    ${result}=   positive add sg member test  ${true}       ${false}        sgmbr       ${none}       ${none}     ${sg-network-mbr}   ${osc}  ${log}
-    should be equal as integers  ${result}  0
-
-
-Test 17 Given a project 'admin', and a network which belongs to the project, and a Security Group with Selection-Type="All Servers", with the network as a member of the SG: Verify that if you delete the network via Openstack then the network should be removed from the Security Group on the OSC - Also verify sync is triggered.
-
-    #Test_Name:     Openstack_SG_VM_None_TC40
-    #Test_Desc:     Verify that if you delete a network belonging to the project 'admin' Openstack API, which has a Security Group with Selection Type - All Servers belonging to the Project, then the network should be deleted from the Security Group (OSC). Also verify sync is triggered
-    #Test_Desc:     Verify that if you add a VM to the project 'admin', which has a Security Group with Selection Type - All Servers belonging to the Project, then the VM should be added to the Security Group
-    #Test_Type:     Positive
-
-    ##                                            expected_value     field_name      data_fetch_fcn     filter_field    filter_value      osc        data_fetch_fcn_args
-
-    ##
-    deleteSG        ${osc}
-
-    ##                                       start_clean,   finish_clean,   obj_type,   field_type,   field,        obj,                      osc,       log)
-    ${result}=   positive test               ${true}        ${false}        sg          ${none}       ${none}       ${sg-protectall-true}     ${osc}   ${log}
-    should be equal as integers  ${result}  0
-
-    robot_log       Finished Creating SG
-
-    ##                                        data_fetch_fcn      filter_field    filter_value      osc         data_fetch_fcn_args
-    ${sg-mbrs1-before-delete}=    fetch osc data                getSgMbrs           ${none}         ${none}           ${osc}      sg_name_or_id  ${sg-protectall-true}
-
-    ##ostack delete network    ${ostack-ip}   ${ostack-network-id}
-    ostack delete network     ${ostack-ip}    ${sg-test-net}
-    ${sg-mbrs1-after-delete}=    fetch osc data                getSgMbrs           ${none}         ${none}           ${osc}      sg_name_or_id  ${sg-protectall-true}
-
 
 Test 10 Create a Security Group with all valid parameters and Selection Type - All Servers belonging to Project
     #Test_Name:     Openstack_SG_VM_None_TC1
@@ -240,6 +209,42 @@ Test 10 Create a Security Group with all valid parameters and Selection Type - A
     ##                                         expected_value   field_name     data_fetch_fcn    filter_field    filter_value      osc        fetch_fcn_keyargs
     ${result}=   positive check field value    ${false}          protectAll     getSgs            ${none}         ${none}           ${osc}     sg_name_or_id   ${sg-name}
     should be equal as integers  ${result}   0
+
+
+
+
+19 Given a project 'admin', and a Security Group with Selection-Type="All Servers". Verify that if you add a new network for the project via Openstack then the network should be added to the Security Group on the OSC - Also verify sync is triggered.
+
+    #Test_Name:     Openstack_SG_VM_None_TC9
+    #Test_Desc:     Verify that if you create a network belonging to the project admin via Openstack API which has a Security Group with Selection Type - All Servers belonging to the Project then the network should be added to the Security Group on the OSC - Also verify sync is triggered
+    #Test_Desc:     Verify that if you add a VM to the project admin, which has a Security Group with Selection Type - All Servers belonging to the Project, then the VM should be added to the Security Group
+    #Test_Type:     Positive
+
+    ##                                            expected_value     field_name      data_fetch_fcn     filter_field    filter_value      osc        data_fetch_fcn_args
+
+    ##
+    deleteSG        ${osc}
+
+    ##                                       start_clean,   finish_clean,   obj_type,   field_type,   field,        obj,                      osc,       log)
+    ${result}=   positive test               ${true}        ${false}        sg          ${none}       ${none}       ${sg-protectall-true}     ${osc}   ${log}
+    should be equal as integers  ${result}  0
+
+    robot_log       Finished Creating SG
+
+    ##                                        data_fetch_fcn      filter_field    filter_value      osc         data_fetch_fcn_args
+    ${sg-mbrs1-before-create}=    fetch osc data                getSgMbrs           ${none}         ${none}           ${osc}      sg_name_or_id  ${sg-protectall-true}
+
+    ${ostack-network-id}=  ostack create network    ${ostack-ip}   ${sg-test-net}
+
+    ${sg-mbrs1-after-create}=    fetch osc data                getSgMbrs           ${none}         ${none}           ${osc}      sg_name_or_id  ${sg-protectall-true}
+
+
+*** ignore ***
+
+Test 9 Add NETWORK SG Member
+    ##                                        start_clean,   finish_clean,   obj_type,   field_type,   field,      obj,                osc,    log)
+    ${result}=   positive add sg member test  ${true}       ${false}        sgmbr       ${none}       ${none}     ${sg-network-mbr}   ${osc}  ${log}
+    should be equal as integers  ${result}  0
 
 Test 11 Verify that if you add a VM to the project admin, which has a Security Group with Selection Type - All Servers belonging to the Project, then the VM should be added to the Security Group
     #Test_Name:     Openstack_SG_VM_None_TC02
@@ -275,12 +280,11 @@ Test 11 Verify that if you add a VM to the project admin, which has a Security G
 
 
 
+Test 17 Given a project 'admin', and a network which belongs to the project, and a Security Group with Selection-Type="All Servers", with the network as a member of the SG: Verify that if you delete the network via Openstack then the network should be removed from the Security Group on the OSC - Also verify sync is triggered.
 
-19 Given a project 'admin', and a Security Group with Selection-Type="All Servers". Verify that if you add a new network for the project via Openstack then the network should be added to the Security Group on the OSC - Also verify sync is triggered.
-
-    #Test_Name:     Openstack_SG_VM_None_TC9
-    #Test_Desc:     Verify that if you create a network belonging to the project admin via Openstack API which has a Security Group with Selection Type - All Servers belonging to the Project then the network should be added to the Security Group on the OSC - Also verify sync is triggered
-    #Test_Desc:     Verify that if you add a VM to the project admin, which has a Security Group with Selection Type - All Servers belonging to the Project, then the VM should be added to the Security Group
+    #Test_Name:     Openstack_SG_VM_None_TC40
+    #Test_Desc:     Verify that if you delete a network belonging to the project 'admin' Openstack API, which has a Security Group with Selection Type - All Servers belonging to the Project, then the network should be deleted from the Security Group (OSC). Also verify sync is triggered
+    #Test_Desc:     Verify that if you add a VM to the project 'admin', which has a Security Group with Selection Type - All Servers belonging to the Project, then the VM should be added to the Security Group
     #Test_Type:     Positive
 
     ##                                            expected_value     field_name      data_fetch_fcn     filter_field    filter_value      osc        data_fetch_fcn_args
@@ -295,12 +299,11 @@ Test 11 Verify that if you add a VM to the project admin, which has a Security G
     robot_log       Finished Creating SG
 
     ##                                        data_fetch_fcn      filter_field    filter_value      osc         data_fetch_fcn_args
-    ${sg-mbrs1-before-create}=    fetch osc data                getSgMbrs           ${none}         ${none}           ${osc}      sg_name_or_id  ${sg-protectall-true}
+    ${sg-mbrs1-before-delete}=    fetch osc data                getSgMbrs           ${none}         ${none}           ${osc}      sg_name_or_id  ${sg-protectall-true}
 
-    ${ostack-network-id}=  ostack create network    ${ostack-ip}   ${sg-test-net}
-
-    ${sg-mbrs1-after-create}=    fetch osc data                getSgMbrs           ${none}         ${none}           ${osc}      sg_name_or_id  ${sg-protectall-true}
-
+    ##ostack delete network    ${ostack-ip}   ${ostack-network-id}
+    ostack delete network     ${ostack-ip}    ${sg-test-net}
+    ${sg-mbrs1-after-delete}=    fetch osc data                getSgMbrs           ${none}         ${none}           ${osc}      sg_name_or_id  ${sg-protectall-true}
 
 
 
