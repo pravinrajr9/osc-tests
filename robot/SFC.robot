@@ -161,6 +161,7 @@ Test 8 Positive Create Security Group
     ${result}=  positive test   ${true}  ${false}  sg  name  ${sg-name}  ${sg}  ${osc}  ${log}
     should be equal as integers  ${result}  0
 
+*** ignore ***
 Test 9 Positive Add Security Group Binding
     ##                                    start_clean, finish_clean, obj_type, field_type, field, obj, osc, log)
     ${result}=  positive add sg binding test  ${false}  ${false}  sgbdg  none  none  ${sg-odd-bdg}  ${osc}  ${log}

@@ -135,6 +135,18 @@ Initialization Completed
 
 
 
+
+11 unbind Policies
+    ${num-bdg}=   getNumSgBdgs  ${osc}
+    log to console   before removing number of bindings is:
+    log to console   ${num-bdg}
+    removeSgBdgs   ${osc}
+    ${num-bdg}=   getNumSgBdgs  ${osc}
+    log to console   after removing number of bindings is:
+    log to console   ${num-bdg}
+    should be equal as integers   ${num-bdg}   0
+
+*** ignore ***
 9 Verify bind Odd Policy
     #Test_Name:     Openstack_SG_Bind_TC1
     #Test_Desc:     Verify that you can Bind Policy To Security Group using an ISM DA
@@ -154,20 +166,12 @@ Initialization Completed
     ${result}=   positive add sg binding test  ${true}  ${false}  sgbdg  ${none}  ${none}  ${sg-even-bdg}  ${osc}  ${log}
     should be equal as integers  ${result}  0
 
-11 unbind Policies
-    ${num-bdg}=   getNumSgBdgs  ${osc}
-    log to console   before removing number of bindings is:
-    log to console   ${num-bdg}
-    removeSgBdgs   ${osc}
-    ${num-bdg}=   getNumSgBdgs  ${osc}
-    log to console   after removing number of bindings is:
-    log to console   ${num-bdg}
-    should be equal as integers   ${num-bdg}   0
 
 12 Verify bind Mulitple Policies
     #Test_Name:   Openstack_SG_Bind_TC14
     ${result}=   positive add sg binding test  ${false}  ${false}  sgbdg  ${none}  ${none}  ${sg-multiple-bdg}  ${osc}  ${log}
     should be equal as integers  ${result}  0
+
 
 
 ##
