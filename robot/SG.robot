@@ -55,7 +55,8 @@ Prepare variables
 
     ${sg-subnet-mbr}=          get sgmbr    ${sg-name}      ${sg-subnet-member-name}    ${sg-subnet-member-type}   ${ds-region}
     #${sg-network-mul-mbrs}=         get sgmbr    ${sg-name}      ${sg-networks}   ${sg-network-member-type}  ${ds-region}
-    ${sg-vm-mul-mbrs}=         get sgmbr    ${sg-name}      ${sg-vms}   ${sg-vm-member-type}  ${ds-region}
+
+    #${sg-vm-mul-mbrs}=         get sgmbr    ${sg-name}      ${sg-vms}   ${sg-vm-member-type}  ${ds-region}
 
     set global variable   ${osc}
     set global variable   ${vc}
@@ -70,8 +71,8 @@ Prepare variables
     set global variable   ${sg1-vm-mbr}
     set global variable   ${sg-network-mbr}
     set global variable   ${sg1-network-mbr}
-    set global variable   ${sg-network-mul-mbrs}
-    set global variable   ${sg-vm-mul-mbrs}
+   #set global variable   ${sg-network-mul-mbrs}
+   #set global variable   ${sg-vm-mul-mbrs}
     set global variable   ${sg-subnet-mbr}
     set global variable   ${log}
 
