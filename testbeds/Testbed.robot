@@ -53,6 +53,7 @@ ${da-swname}=  0.3.0.5000
 ${da-domainName}=  Default
 ${da-encapType}=  VLAN
 ${vnf-path}=  ../osc_resources/cirrosAppl-1nic.zip
+${vnf-2-path}=  ../osc_resources/cirrosApp2-1nic.zip
 
 # DS
 ${ds-name}=  default-DS
