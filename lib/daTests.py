@@ -55,6 +55,9 @@ def updateDS(osc, ds, update_ds_name_or_id):
 def deleteDS(osc, ds_name_or_id=None):
     return osc.deleteDepSpec(ds_name_or_id=ds_name_or_id, force=False)
 
+def deleteFC(osc, model_name):
+    return osc.deleteFC(model_name)
+
 def getDSs(osc, ds_name_or_id=None):
     return osc.getAllDeploymentSpecs(ds_name_or_id=ds_name_or_id)
 
@@ -249,7 +252,17 @@ def deployDAnsx(osc, da):
     Log.log_info("daTests.deployDA -- DA:\n%s" %(Log.pformat(da_dict)))
     osc.deployAppliance(daid, cluster, datastore, portgrgroup, ippool)
 
-def updateDA(osc, da, daid):
+def negative_test_delete_FC(osc, model_name):
+    try:
+        deleteFC(osc, model_name)
+    except Exception as e:
+        error_info = datastructUtils.get_exception_info(e)
+        if not error_info:
+            error_info = "Negative Test had no Error!!!"
+
+    return error_info
+
+def updateDA(osc, da, daid, sync=True):
     global Log
     if not isinstance(da.daname, str):
         Log.log_abort("updateDA -- daname: %s" %(da.daname))
@@ -263,9 +276,13 @@ def updateDA(osc, da, daid):
     if not daid:
         Log.log_abort("daTests.updateDA No 'daid' Given\n\n -- da:\n%s" %(Log.pformat(da_dict)))
     pass
-
+    if isinstance(daid, list):
+        daid = daid[0]
     Log.log_info("daTests.updateDA -- da:\n%s" %(Log.pformat(da_dict)))
-    osc.syncDistributedAppliancebyID(daid)
+    if sync == True:
+        osc.syncDistributedAppliancebyID(daid)
+    else:
+        osc.updateDA(da, daid)
 pass
 
 

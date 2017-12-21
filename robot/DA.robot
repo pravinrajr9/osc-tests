@@ -3,6 +3,8 @@ Resource     ../testbeds/${testbed}
 Library      ../lib/vcTests.py
 Library      ../lib/mcTests.py
 Library      ../lib/daTests.py
+Library      ../lib/osc.py
+
 Library      String
 
 *** keywords ***
@@ -61,15 +63,26 @@ ADD VC with name default-VC
     ${result}=  positive test   ${true}  ${false}  vc  name  ${vc-name}  ${vc}  ${osc}  ${log}
     should be equal as integers  ${result}  0
 
+ADD VC with name default-VC-2
+    ${vc}=   get vc   ${vc-type}  ${vc-name-2}  ${vc-ip-2}  ${vc-providerUser}  ${vc-providerPass}  ${vc-softwareVersion}  ${vc-ishttps}  ${vc-rabbitMQPort}  ${vc-rabbitUser}  ${vc-rabbitMQPassword}  ${vc-adminProjectName}  ${vc-adminDomainId}  ${vc-controllerType}
+    ${result}=  positive test   ${false}  ${false}  vc  name  ${vc-name-2}  ${vc}  ${osc}  ${log}
+    should be equal as integers  ${result}  0
+
 ADD MC-ISM with name default-MC
     ${mc}=   get mc   ISM  default-MC  ${mc-providerIP}  ${mc-user}  ${mc-pass}  ${mc-apikey}
     ${result}=  positive test   ${true}  ${false}  mc  name  ${mc-name}  ${mc}  ${osc}  ${log}
     should be equal as integers  ${result}  0
 
 UPload VNF Image if needed
-    ${result}  ${status}=  uploadVnfImage   ${osc}  ${vnf-path}
+    ${result}  ${status}=  uploadVnfImage   ${osc}  ${vnf-path}  ${da-model}
     log to console  ${status}
     should be equal as integers  ${result}  0
+
+Upload VNF Image-2 if needed
+    ${result}  ${status}=  uploadVnfImage   ${osc}  ${vnf-2-path}  ${da-model-2}
+    log to console  ${status}
+    should be equal as integers  ${result}  0
+
 
 #Openstack_DA_TC05
 Test 1 Positive Create Distributed Appliances with all valid params
@@ -93,11 +106,38 @@ Test 3 Negative cannot create DA with duplicate name
     ${result}  ${error-msg}=    negative test  ${error-sub-string}   ${false}  ${false}   da  name  ${da-name}  ${da}  ${osc}  ${log}
     should contain  ${error-msg}   ${error-sub-string}
 
+
+Test 4 Positive update Distributed Appliances with new security function
+    #${mc}=   get mc   ${mc-type}  ${mc-name}  ${mc-providerIP}  ${mc-user}  ${mc-pass}  ${mc-apikey}
+    ${result}=  positive test   ${true}  ${false}  da  name  DA-default  ${da}  ${osc}  ${log}
+    ${da-id}=  getDAs  ${osc}  DA-default
+    ${da}=   get da   ${da-name}  ${da-mcname}  ${da-model-2}  ${da-swname-2}  ${da-domainName}  ${da-encapType}  ${da-vcname}  ${da-vctype}
+    #${result}=  positive update test   ${da-id}  ${false}  da  name  DA-default  ${da}  ${osc}  ${log}
+    #4th parameter is to make syncDistributedAppliance false
+    updateDA   ${osc}  ${da}  ${da-id}  False
+    #should be equal as integers  ${result}  0
+
+
+
+
+Test 5 Positive update Distributed Appliances with new virtualization connector
+    #${mc}=   get mc   ${mc-type}  ${mc-name}  ${mc-providerIP}  ${mc-user}  ${mc-pass}  ${mc-apikey}
+    ${result}=  positive test   ${true}  ${false}  da  name  DA-default  ${da}  ${osc}  ${log}
+    ${da-id}=  getDAs  ${osc}  DA-default
+    ${da}=   get da   ${da-name}  ${da-mcname}  ${da-model-2}  ${da-swname-2}  ${da-domainName}  ${da-encapType}  ${da-vcname-2}  ${da-vctype}
+    #${result}=  positive update test   ${da-id}  ${false}  da  name  DA-default  ${da}  ${osc}  ${log}
+    updateDA   ${osc}  ${da}  ${da-id}  False
+
+
+
+
+*** ignore ***
 #Openstack_DA_TC10
-Test 4 Delete DA (or Force Delete DA)
+Test 5 Delete DA (or Force Delete DA)
     ${result}=  delete das  ${osc}
     Run keyword If  ${result} == 0   log to console  delete DAs succeeded
     Run keyword If  ${result} == 1   Handle DA Force Delete
+
 
 *** old ***
 Add NSM Certificate
@@ -127,4 +167,6 @@ Test 6 Positive Distributed Appliances SMC with all valid para create include de
     ${da}=   get da   ${da-name}  ${da-mcname}  ${da-model}  ${da-swname}  ${da-domainName}  ${da-encapType}  ${da-vcname}  ${da-vctype}
     ${result}=  positive test   ${true}  ${true}  da  name  DA-default-SMC  ${da}  ${osc}  ${log}
     should be equal as integers  ${result}  0
+
+
 
