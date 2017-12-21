@@ -285,13 +285,17 @@ class ISC(object):
     # Get the ISC version.
     # Return a string with the ISC version
     def getISCVersion(self):
-        action = 'ISC version query'
-        url = '/api/server/v1/serverManagement/status'
-        body = ''
+        try:
+            self._output.log_info("inside getISCVersion")
+            action = 'ISC version query'
+            url = '/api/server/v1/serverManagement/status'
+            body = ''
 
-        data = self._isc_connection("GET", url, body, action)
-        self._output.log_debug("getISCVersion -- URL: \"%s\"\n\nResponse:\n%s" %(url, data))
-        return data['version']
+            data = self._isc_connection("GET", url, body, action)
+            self._output.log_debug("getISCVersion -- URL: \"%s\"\n\nResponse:\n%s" %(url, data))
+            return data['version']
+        except:
+            return 'could not get OSC version'
     pass
 
 
@@ -2568,8 +2572,10 @@ class ISC(object):
             filePath = urlparse(rstUrl).path
         pass
         fileName = os.path.basename(filePath)
-        ## base_path, fileName = os.path.split(filePath)
-        if rstUrl.endswith(fileName):
+
+        if (rstUrl.endswith('internalkeypair')):
+            pass     #it's for ssl key pair
+        elif rstUrl.endswith(fileName):
             pass
         elif rstUrl.endswith(r"/"):
             rstUrl += fileName
@@ -2996,38 +3002,30 @@ class ISC(object):
         pass
     pass
 
-    '''
-    def uploadNvfImage(self, imgFile=None, applImageRootDir="/home/mounts/nfs-public/Appliance-Images"):
-        _funcargs = {'self':self, 'imgFile':imgFile, 'applImageRootDir':applImageRootDir }
-        self._output.log_debug("Enter uploadNvfImage -- Args:\n%s" %(self._output.pformat(_funcargs)))
-        imgPath = None
-        if os.path.isabs(imgFile):
-            imgPath = imgFile
-        else:
-            imgPath = "%s/%s" %(applImageRootDir, imgFile)
-        pass
+    def uploadSslKeypairImage(self, imgPath=None):
+        res = 0
+        _funcargs = {'self':self, 'imgPath':imgPath }
+        self._output.log_debug("Enter uploadSslKeypairImage -- Args:\n%s" %(self._output.pformat(_funcargs)))
+
         if not imgPath.endswith('.zip'):
-            self._output.log_error("uploadNvfImage -- Error: \"%s\" is not a zip file" %(imgPath))
+            self._output.log_error("uploadSslKeypairImage -- Error: \"%s\" is not a zip file" %(imgPath))
         pass
-        self._output.log_info("uploadNvfImage -- Image Path:  \"%s\"" %(imgPath))
-        nvf_upload_url = "/api/server/v1/catalog/import"
+        self._output.log_debug("uploadSslKeypairImage -- Image Path:  \"%s\"" %(imgPath))
+        rstUrl = "/api/server/v1/serverManagement/internalkeypair"
         if imgPath:
-            imgName = os.path.basename(imgPath)
             if not os.path.exists(imgPath):
-                self._output.log_error("uploadNvfImage -- Error: Img File \"%s\" Not Found" %(imgPath))
-                raise Exception("uploadNvfImage -- Error: Img File \"%s\" Not Found" %(imgPath))
+                raise Exception("uploadSslKeypairImage -- Error: Img File \"%s\" Not Found" %(imgPath))
             pass
             if not len(imgPath):
-                self._output.log_error("uploadNvfImage -- Error: Img File \"%s\" is empty" %(imgPath))
-                raise Exception("uploadNvfImage -- Error: Img File \"%s\" is empty" %(imgPath))
+                raise Exception("uploadSslKeypairImage -- Error: Img File \"%s\" is empty" %(imgPath))
             pass
-            rstUrl = (nvf_upload_url + r"/" + imgName)
-            self._output.log_info("uploadNvfImage -- Begin Image Upload to OSC\n -- File: %s\n -- URL: %s" %(imgPath, rstUrl))
-            self.uploadFileToOvf(method="POST", rstUrl=rstUrl, filePath=imgPath)
-            self._output.log_info("uploadNvfImage -- Finished Image Upload to OSC\n -- File: %s\n -- URL: %s" %(imgPath, rstUrl))
+
+            self._output.log_debug("uploadSslKeypairImage -- Begin Image Upload to OSC\n -- File: %s\n -- URL: %s" %(imgPath, rstUrl))
+            res = self.uploadFileToOvf(method="POST", rstUrl=rstUrl, filePath=imgPath, srcFd=None)
+            self._output.log_debug("uploadSslKeypairImage -- Finished Image Upload to OSC\n -- File: %s\n -- URL: %s" %(imgPath, rstUrl))
+            return res
         pass
     pass
-    '''
 
     def getOscOvfPath(self, bldName=None, bldRootDir="/home/mounts/builds_host", bldBranch="trunk"):
         _funcargs = {'bldName':bldName, 'bldRootDir':bldRootDir, 'bldBranch':bldBranch }

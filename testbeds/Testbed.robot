@@ -55,6 +55,8 @@ ${da-encapType}=  VLAN
 ${vnf-path}=  ../osc_resources/cirrosAppl-1nic.zip
 ${vnf-2-path}=  ../osc_resources/cirrosApp2-1nic.zip
 
+${sslkpair-path}=  ../osc_resources/SSLreplaceoriginal.zip
+
 # DS
 ${ds-name}=  default-DS
 ${ds-daname}=  default-DA

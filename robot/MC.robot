@@ -40,6 +40,7 @@ Initialize
 
 SHOW OSC VERSION
     ${osc-version}=  get version  ${osc}
+    set global variable   ${osc-version}
     log to console   ${osc-version}
 
 Clean SGs
@@ -52,7 +53,6 @@ Clean DAs
     delete das  ${osc}
 
 #Actually starting Manager Connector Test Cases
-
 #Openstack_Add_Edit_Delete_Sync_TC1
 Test 1 Positive Create Manager Connector with valid parameters
     ${result}=  positive test   ${true}  ${false}  mc  name  ${mc-name}  ${mc}  ${osc}  ${log}
@@ -169,7 +169,25 @@ Test 19 Positive Update Manager Connector to valid name updated-MC3
     ${result}=  positive update test   ${mc-id}  ${false}   mc   name  updated-MC3    ${mc}  ${osc}  ${log}
     should be equal as integers  ${result}  0
 
+Test 20 Upload SSL Kaypair and it restarts OSC
+    ${result}  ${status}=  uploadSslKeypairImage   ${osc}  ${sslkpair-path}
+    log to console  ${status}
+    should be equal as integers  ${result}  0
 
+Test 21 Waiting to OSC to restart
+    ${osc-version2}=  convert to string  Value not set yet
+    :FOR    ${i}    IN RANGE    1   50
+        \   sleep  10 seconds
+        \   ${osc-version2}=  get version  ${osc}
+        \   Exit For Loop If   "${osc-version2}" == "${osc-version}"
+        \   log to console  waiting for OSC to restart
+        log to console    Finished waiting
+    should be equal as strings      ${osc-version2}     ${osc-version}
+
+#Test 21 wait for OSC
+#   sleep   2 minutes
+#    ${osc-version2}=  get version  ${osc}
+#    should be equal as strings      ${osc-version2}     ${osc-version}
 
 #*** old ***
 *** keywords ***

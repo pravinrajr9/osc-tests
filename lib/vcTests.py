@@ -58,8 +58,8 @@ def uploadVnfImage(osc, imgPath=None, swModel="CIRROS-TCPD"):
     if gotVnfImage(osc, swModel):
         return 0, "VNF Already uploaded"
     fullPath = getPathFromImage(imgPath)
-
     res = 0
+
     try:
         res = osc.uploadNvfImage(imgPath=fullPath)
     except Exception as ex:
@@ -68,6 +68,18 @@ def uploadVnfImage(osc, imgPath=None, swModel="CIRROS-TCPD"):
         res = 1
 
     return res, "Uploading VNF"
+pass
+
+def uploadSslKeypairImage(osc, imgPath=None):
+    fullPath = getPathFromImage(imgPath)
+    res = 0
+    try:
+        res = osc.uploadSslKeypairImage( imgPath=fullPath)
+    except Exception as ex:
+        err_info = datastructUtils.get_exception_info(ex)
+        Log.log_error("uploadSslKeypairImage(%s): %s" % (fullPath, Log.pformat(err_info)))
+        res=1
+    return res, "Uploading SslKeypair"
 pass
 
 # exit if cannot find the specific tag
@@ -3548,6 +3560,10 @@ def run_like_from_robot():
     log = get_log(1, True)
     osc = get_osc(osc_ip, osc_user, osc_pass)
     result =      daTests.getSgMbrs(osc, 'sg')
+
+    # uploading ssl keypair will reboot OSC so we commenting it out
+    #res = uploadSslKeypairImage(osc, "c:\\svn\\Automation\\osc_resources\\SSLreplaceoriginal.zip")
+    #Log.log_info("After uploadVnfImage Res=\"%s\"" % str(res))
 
     res = uploadVnfImage(osc, "c:\\svn\\Automation\\osc_resources\\cirrosAppl-1nic.zip")
     Log.log_info("After uploadVnfImage Res=\"%s\"" % str(res))
