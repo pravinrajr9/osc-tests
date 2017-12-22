@@ -43,19 +43,18 @@ ${da-name}=  default-DA
 ${da-mcname}=  default-MC
 ${da-vcname}=  default-VC
 ${da-vctype}=  OPENSTACK
-#${da-model}=  IPS-VM100-VSS
-#${da-swname}=  8.3.100.19
-#${da-domainName}=  /My Company
-#${da-encapType}=  VLAN
-#${vnf-path}=  ../osc_resources/sensorsw_vm100-vss_8310019.zip
+
 ${da-model}=  CIRROS-TCPD
 ${da-swname}=  0.3.0.5000
 ${da-domainName}=  Default
 ${da-encapType}=  VLAN
 ${vnf-path}=  ../osc_resources/cirrosAppl-1nic.zip
-${vnf-2-path}=  ../osc_resources/cirrosApp2-1nic.zip
+${sslkpair-path}=   ../osc_resources/SSLreplaceoriginal.zip
 
-${sslkpair-path}=  ../osc_resources/SSLreplaceoriginal.zip
+${da-model-2}=  CIRROS-TCPD-1
+${da-swname-2}=  0.3.0.6000
+${da-vcname-2}=  default-VC-2
+${vnf-2-path}=  ../osc_resources/cirrosAppl-2nic.zip
 
 # DS
 ${ds-name}=  default-DS
