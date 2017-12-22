@@ -135,13 +135,13 @@ UPload VNF Image if needed
     should be equal as integers  ${result}  0
 *** Test Cases ***
 
-8Positive Deployment Spec with by host with blank floating point
-    ##Test Name:  TS1_TC3_DS_Selection_ByHost_IPPoolBlank_Add
-    ##Test Desc:  Validate the Appliance instance is created with Discovered and Inspection-Ready state is true when the selection criterion is "By Host" and Floating IP Pool -'blank'
-    ##Test type: Positve
+#8Positive Deployment Spec with by host with blank floating point
+#    ##Test Name:  TS1_TC3_DS_Selection_ByHost_IPPoolBlank_Add
+#    ##Test Desc:  Validate the Appliance instance is created with Discovered and Inspection-Ready state is true when the selection criterion is "By Host" and Floating IP Pool -'blank'
+#    ##Test type: Positve
 
-    ${result}=  positive test   ${true}  ${false}  ds  name  ${ds-name}  ${ds-byhost-nofloatingIP}  ${osc}  ${log}
-    should be equal as integers  ${result}  0
+#    ${result}=  positive test   ${true}  ${false}  ds  name  ${ds-name}  ${ds-byhost-nofloatingIP}  ${osc}  ${log}
+#    should be equal as integers  ${result}  0
 
 *** ignore ***
 9Positive Deployment Spec with by avaialavility zone
