@@ -460,11 +460,11 @@ class ISC(object):
             data = self._isc_connection(method=method, url=url, body=body, action=action, headers="JSON")
             if data is None:
                 self._output.log_error("Exit createOStackVC -- Failed to update VC Id \"%s\"" %(update_vcid))
-                ##return(None)
+                return(None)
             else:
                 vcid = data['id']
                 self._output.log_debug("Exit createOStackVC -- Updated VC Id: \"%s\"" %(vcid))
-                #return(vcid)
+                return(vcid)
             pass
 
         else:
@@ -555,6 +555,8 @@ class ISC(object):
 
             return (vcid)
     pass
+
+
 
     def getManagerConnectorByName(self, name):
         mcDict = self.getManagerConnectors()
@@ -2817,10 +2819,16 @@ class ISC(object):
         self._output.log_debug("getCertificates -- Calliing _isc_connection ...")
         data = self._isc_connection("GET", url, body, action)
         self._output.log_debug("getCertificates -- Returned %s certificates from _isc_connection:\n%s" %(len(list(data)), data))
+        #return dict value of key 'issuer'
+        return str(data[0]["issuer"])
 
-        return len(list(data))
 
-
+    def stringhas(self, str, substr):
+        if str.contains(substr):
+            self._output.log_debug("%s has %s" % str, substr)
+        else:
+            self._output.log_debug("%s has no %s" % str, substr)
+            
     def uploadCertificate(self, name, cert):
         action = 'upload ssl certificate'
         url = '/api/server/v1/serverManagement/sslcertificate'
@@ -2871,6 +2879,7 @@ class ISC(object):
         pass
     pass
 
+
     def uploadSslKeypairImage(self, imgPath=None):
         res = 0
         _funcargs = {'self':self, 'imgPath':imgPath }
@@ -2882,6 +2891,7 @@ class ISC(object):
         self._output.log_debug("uploadSslKeypairImage -- Image Path:  \"%s\"" %(imgPath))
         rstUrl = "/api/server/v1/serverManagement/internalkeypair"
         if imgPath:
+            imgName = os.path.basename(imgPath)
             if not os.path.exists(imgPath):
                 raise Exception("uploadSslKeypairImage -- Error: Img File \"%s\" Not Found" %(imgPath))
             pass

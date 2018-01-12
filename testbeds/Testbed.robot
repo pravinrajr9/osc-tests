@@ -50,6 +50,8 @@ ${da-domainName}=  Default
 ${da-encapType}=  VLAN
 ${vnf-path}=  ../osc_resources/cirrosAppl-1nic.zip
 ${sslkpair-path}=   ../osc_resources/SSLreplaceoriginal.zip
+${sslkpairx509-path}=   ../osc_resources/SSLosxx509test.zip
+${sslkpairx509pem-path}=   ../osc_resources/SSLoscx509test_x509pem.zip
 
 ${da-model-2}=  CIRROS-TCPD-1
 ${da-swname-2}=  0.3.0.6000

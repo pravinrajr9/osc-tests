@@ -169,12 +169,31 @@ Test 19 Positive Update Manager Connector to valid name updated-MC3
     ${result}=  positive update test   ${mc-id}  ${false}   mc   name  updated-MC3    ${mc}  ${osc}  ${log}
     should be equal as integers  ${result}  0
 
-Test 20 Upload SSL Kaypair and it restarts OSC
-    ${result}  ${status}=  uploadSslKeypairImage   ${osc}  ${sslkpair-path}
+
+Test 20 Verify uploaded SSL certificate with issuer vmidc
+    ${status}=  getCertificates   ${osc}
+    log to console  ${status}
+    should contain any  ${status}   vmidc
+
+Test 21 Upload SSL Kaypair no restarts OSC
+    ${result}  ${status}=  uploadSslKeypairImage   ${osc}  ${sslkpairorg-path}
     log to console  ${status}
     should be equal as integers  ${result}  0
 
-Test 21 Waiting to OSC to restart
+
+#we don't need reboot we didn't change certificate
+#get and verify SSL certificates:
+Test 22 Verify uploaded SSL certificate with issuer vmidc
+    ${status}=  getCertificates   ${osc}
+    log to console  ${status}
+    should contain any  ${status}   vmidc
+
+Test 23 Upload SSL Kaypair with issuer X509
+    ${result}  ${status}=  uploadSslKeypairImage   ${osc}  ${sslkpairx509-path}
+    log to console  ${status}
+    should be equal as integers  ${result}  0
+
+Test 24 Waiting to OSC to restart
     ${osc-version2}=  convert to string  Value not set yet
     :FOR    ${i}    IN RANGE    1   50
         \   sleep  10 seconds
@@ -183,6 +202,33 @@ Test 21 Waiting to OSC to restart
         \   log to console  waiting for OSC to restart
         log to console    Finished waiting
     should be equal as strings      ${osc-version2}     ${osc-version}
+
+Test 25 Verify uploaded SSL certificate X509 after OSC restarted
+    ${status}=  getCertificates   ${osc}
+    log to console  ${status}
+    should contain any  ${status}   X509
+
+#Following Test will restart OSC by itself:
+Test 26 Upload SSL Kaypair and it restarts OSC
+    ${result}  ${status}=  uploadSslKeypairImage   ${osc}  ${sslkpairx509pem-path}
+    log to console  ${status}
+    should be equal as integers  ${result}  0
+
+Test 27 Waiting to OSC to restart
+    ${osc-version2}=  convert to string  Value not set yet
+    :FOR    ${i}    IN RANGE    1   50
+        \   sleep  10 seconds
+        \   ${osc-version2}=  get version  ${osc}
+        \   Exit For Loop If   "${osc-version2}" == "${osc-version}"
+        \   log to console  waiting for OSC to restart
+        log to console    Finished waiting
+    should be equal as strings      ${osc-version2}     ${osc-version}
+
+Test 28 Verify uploaded SSL certificate SomeGoodGuy after OSC restarted
+    ${status}=  getCertificates   ${osc}
+    log to console  ${status}
+    should contain any  ${status}   SomeGoodGuy
+
 
 #Test 21 wait for OSC
 #   sleep   2 minutes
