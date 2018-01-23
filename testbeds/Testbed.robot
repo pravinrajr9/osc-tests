@@ -30,7 +30,7 @@ ${blank}=
 # MC
 ${mc-type}=  ISM
 ${mc-name}=  default-MC
-${mc-providerIP}=  10.3.205.105
+${mc-providerIP}=  ${vc-providerIP}
 ${mc-user}=  admin
 ${mc-pass}=  admin123
 ${mc-apikey}=
@@ -63,8 +63,14 @@ ${ds-name}=  default-DS
 ${ds-daname}=  default-DA
 ${ds-project}=  admin
 ${ds-region}=   RegionOne
-#${ds-selction}=  All
-${ds-selction}=  hosts:yc-newton-comp1
+
+${ds-selction}=  can be 'All' without the quotes or specific hosts like: hosts:compute-node-name
+${ds-selection-byhost}=  can be single host hosts:compute-node-name  or as a list with ',' as seperator hosts:compute-node-1,compute-node-2,...
+
+#next two are not needed for now:
+${ds-selection-byAZ}=  zone:    followed by a comma seperated list of availability zones
+${ds-selection-byHA}=  hostAggregate:  followed by a comma seperated list of host agregates
+
 
 ${ds-mgmt-net}=  mgmt-net
 ${ds-insp-net}=  insp-net
