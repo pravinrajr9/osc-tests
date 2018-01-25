@@ -170,10 +170,10 @@ Test 19 Positive Update Manager Connector to valid name updated-MC3
     should be equal as integers  ${result}  0
 
 
-Test 20 Verify uploaded SSL certificate with issuer vmidc
-    ${status}=  getCertificates   ${osc}
-    log to console  ${status}
-    should contain any  ${status}   vmidc
+#Test 20 Verify uploaded SSL certificate with issuer vmidc
+#    ${status}=  getCertificates   ${osc}
+#    log to console  ${status}
+#    should contain any  ${status}   vmidc
 
 Test 21 Upload SSL Kaypair no restarts OSC
     ${result}  ${status}=  uploadSslKeypairImage   ${osc}  ${sslkpairorg-path}
