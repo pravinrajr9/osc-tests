@@ -1418,38 +1418,39 @@ def wrap_verifying_all_clean(before_after=None,
     if fail_on_error:
         pass
     pass
-
+    Log.log_debug(verification_fcn)
     Log.log_debug("Enter wrap_verifying_all_clean ...")
     orig_err_count = test_err_count
-    Log.log_debug("wrap_verifying_all_clean(%s) - Verifyiing if we are in a clean state" % (before_after));
+    Log.log_debug("wrap_verifying_all_clean(%s) - Verifyiing if we are in a clean state" % (before_after))
     ids_list = wrap_verify(osc=osc, verification_fcn=verification_fcn)
 
     if not ids_list:
-        Log.log_debug("wrap_verifying_all_clean(%s) - Clean state - Can skip a cleaning step" % (before_after));
+        Log.log_debug("wrap_verifying_all_clean(%s) - Clean state - Can skip a cleaning step" % (before_after))
     else:
         test_step += 1
-        Log.log_debug("wrap_verifying_all_clean(%s) - Need to clean skip a cleaning step" % (before_after));
+        Log.log_debug("wrap_verifying_all_clean(%s) - Need to clean skip a cleaning step" % (before_after))
         Log.log_debug("wrap_verifying_all_clean(%s) - Calling wrap_clean ...")
         wrap_clean(osc=osc, clean_fcn=clean_fcn, ids_list=ids_list)
         Log.log_debug("wrap_verifying_all_clean(%s) - Returned from wrap_clean")
         test_step += 1
         Log.log_debug("wrap_verifying_all_clean(%s) - Calling wrap_verify ...")
         ids_list = wrap_verify(osc=osc, verification_fcn=verification_fcn)
-        Log.log_debug("wrap_verifying_all_clean(%s) - Returned from wrap_verify")
+        Log.log_debug("wrap_verifyi"
+                      "ng_all_clean(%s) - Returned from wrap_verify")
         if not ids_list:
-            Log.log_debug("wrap_verifying_all_clean(%s) - succeed in cleaning" % (before_after));
+            Log.log_debug("wrap_verifying_all_clean(%s) - succeed in cleaning" % (before_after))
         else:
 
             seconds = 0
             while len(ids_list) > 0 and seconds < 10:
-                Log.log_debug("wrap_verifying_all_clean(%s) - failed in cleaning waited %s " % (before_after, str(seconds)));
+                Log.log_debug("wrap_verifying_all_clean(%s) - failed in cleaning waited %s " % (before_after, str(seconds)))
                 sleep(1)
                 ids_list = wrap_verify(osc=osc, verification_fcn=verification_fcn)
                 seconds += 1
             pass
 
             if seconds == 10:
-                Log.log_debug("wrap_verifying_all_clean(%s) - failed in cleaning after trying for 10 seconds " % (before_after));
+                Log.log_debug("wrap_verifying_all_clean(%s) - failed in cleaning after trying for 10 seconds " % (before_after))
         pass
 
         new_err_count = (test_err_count - orig_err_count)

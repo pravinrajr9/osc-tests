@@ -285,13 +285,17 @@ class ISC(object):
     # Get the ISC version.
     # Return a string with the ISC version
     def getISCVersion(self):
-        action = 'ISC version query'
-        url = '/api/server/v1/serverManagement/status'
-        body = ''
+        try:
+            self._output.log_info("inside getISCVersion")
+            action = 'ISC version query'
+            url = '/api/server/v1/serverManagement/status'
+            body = ''
 
-        data = self._isc_connection("GET", url, body, action)
-        self._output.log_debug("getISCVersion -- URL: \"%s\"\n\nResponse:\n%s" %(url, data))
-        return data['version']
+            data = self._isc_connection("GET", url, body, action)
+            self._output.log_debug("getISCVersion -- URL: \"%s\"\n\nResponse:\n%s" %(url, data))
+            return data['version']
+        except:
+            return 'could not get OSC version'
     pass
 
 
@@ -456,11 +460,11 @@ class ISC(object):
             data = self._isc_connection(method=method, url=url, body=body, action=action, headers="JSON")
             if data is None:
                 self._output.log_error("Exit createOStackVC -- Failed to update VC Id \"%s\"" %(update_vcid))
-                ##return(None)
+                return(None)
             else:
                 vcid = data['id']
                 self._output.log_debug("Exit createOStackVC -- Updated VC Id: \"%s\"" %(vcid))
-                #return(vcid)
+                return(vcid)
             pass
 
         else:
@@ -551,6 +555,8 @@ class ISC(object):
 
             return (vcid)
     pass
+
+
 
     def getManagerConnectorByName(self, name):
         mcDict = self.getManagerConnectors()
@@ -768,12 +774,93 @@ class ISC(object):
     # If a distributed appliance already exists with the same name but
     # different named elements, raise an exception.  A future enhancement would
     # be to add a flag that allows modifying an existing distributed appliance.
-    def _createDistributedAppliance(self, daname, mcname, mcid, apid, model, swver, vcid, vcname, vctype, domainName,
-                                   encapsulation=""):
+    def _createorUpdateDistributedAppliance(self, daname, mcname, mcid, apid, model, swver, vcid, vcname, vctype, domainName,
+                                   encapsulation="", daid=None):
         _funcargs = {'daname':daname, 'mcid':mcid, 'apid':apid, 'model':model, 'swver':swver, 'vcid':vcid, 'vcname':vcname, 'vctype':vctype, 'domainName':domainName, 'encapsulation':encapsulation}
         self._output.log_debug("Enter _createDistributedAppliance -- Func Args:\n%s" %(self._output.pformat(_funcargs)))
 
         body = ''
+        if daid != None:
+            tempdict = self.getDomainsofManagerConnector(mcid)
+            vssid = self.getVSIDsforDAID(daid)
+
+            da_info = self.getDistributedAppliancebyID(daid)
+            da_vc_name = da_info[2]
+
+
+
+            self._output.log_debug("Distributed Appliance Id Info: %s" %(self._output.pformat(da_info)))
+            if domainName not in tempdict.keys():
+                raise ISCTestError("Domain %s does not exist in ISC" % domainName)
+            else:
+                domainId = tempdict[domainName]
+                if da_vc_name == vcname:
+                    body = '''
+                                {
+                                    "id": %s,
+                                    "name": "%s",
+                                    "managerConnectorName": "%s",
+                                    "managerConnectorId": "%s",
+                                    "applianceSoftwareVersionId": "%s",
+                                    "applianceModel": "%s",
+                                    "applianceSoftwareVersionName": "%s",
+                                    "secretKey": "dummy1234",
+                                    "markForDeletion": false,
+                                    "virtualSystem": [
+                                        {
+                                            "id": "%s",
+                                            "domainId": "%s",
+                                            "domainName": "%s",
+                                            "markForDeletion": false,
+                                            "vcId": "%s",
+                                            "virtualizationConnectorName": "%s",
+                                            "virtualizationType": "%s",
+                                            "encapsulationType": "%s"
+                                        }
+                                    ]
+                                }
+                            ''' % (
+                        daid, daname, mcname, mcid, apid, model, swver, vssid, domainId, domainName, vcid, vcname, vctype, encapsulation)
+                else:
+                    body = '''
+                                                    {
+                                                        "id": %s,
+                                                        "name": "%s",
+                                                        "managerConnectorName": "%s",
+                                                        "managerConnectorId": "%s",
+                                                        "applianceSoftwareVersionId": "%s",
+                                                        "applianceModel": "%s",
+                                                        "applianceSoftwareVersionName": "%s",
+                                                        "secretKey": "dummy1234",
+                                                        "markForDeletion": false,
+                                                        "virtualSystem": [
+                                                            {
+                                                                
+                                                                "domainId": "%s",
+                                                                "domainName": "%s",
+                                                                "markForDeletion": false,
+                                                                "vcId": "%s",
+                                                                "virtualizationConnectorName": "%s",
+                                                                "virtualizationType": "%s",
+                                                                "encapsulationType": "%s"
+                                                            }
+                                                        ]
+                                                    }
+                                                ''' % (
+                        daid, daname, mcname, mcid, apid, model, swver, domainId, domainName, vcid, vcname,
+                        vctype, encapsulation)
+                action = 'create Distributed Appliance'
+                url = '/api/server/v1/distributedAppliances/%s' %daid
+                method = "PUT"
+
+                datafmt = "JSON"
+                headers = datafmt
+
+                self._output.log_debug(
+                "_createDistributedAppliance -- Sending %s Request for Action: %s:\n -- IP Addr: \"%s\"\n -- Headers: \"%s\"\n -- Method: \"%s\"\n -- URL: \"%s\"\n\n -- Body:\n%s" % (
+                method, action, self.iscaddr, headers, method, url, body))
+                data = self._isc_connection("PUT", url, body, action)
+                return self._wait_for_job(data)
 
         if domainName == "":
             body = '''
@@ -993,7 +1080,8 @@ class ISC(object):
     def syncDistributedAppliancebyID(self, da_id):
         action = 'Sync Distributed Appliance %s' % da_id
         url = '/api/server/v1/distributedAppliances/%s/sync' % da_id
-        body = ''
+
+        body = ""
         method = "PUT"
         datafmt = "JSON"
         headers = datafmt
@@ -1363,8 +1451,34 @@ class ISC(object):
         action = 'create Distributed Appliance'
         url = '/api/server/v1/distributedAppliances'
         self._output.log_debug("createDA -- Calling _createDistributedAppliance")
-        return( self._createDistributedAppliance(daname=da.daname, mcname=da.mcname, mcid=mcid, apid=apid, model=da.model, swver=da.swname, vcid=vcid, vcname=da.vcname, vctype=da.vctype, domainName=da.domainName, encapsulation=da.encapType) )
+        return( self._createorUpdateDistributedAppliance(daname=da.daname, mcname=da.mcname, mcid=mcid, apid=apid, model=da.model, swver=da.swname, vcid=vcid, vcname=da.vcname, vctype=da.vctype, domainName=da.domainName, encapsulation=da.encapType) )
 
+    def updateDA(self, da, daid):
+        vcid = self.getVirtualizationConnectorID(da.vcname)
+        mcid = self.getManagerConnectorByName(da.mcname)
+        domainsDict = self.getDomainsofManagerConnector(mcid)
+        if not domainsDict:
+            pass  # for Managers that doesn't contain domains as ISM
+
+        else:
+            domainID = domainsDict[da.domainName]
+
+        self._output.log_debug("createDA -- Calling getAppliances")
+        catalogDict = self.getAppliances()
+        if da.model not in catalogDict:
+            self._output.log_error(
+                "createDA -- No such appliance-model \"%s\" found in the OSC Service Function Catalog:\n%s" % (
+                da.model, self._output.pformat(catalogDict)))
+        self._output.log_debug(
+            "createDA -- Returned from getAppliances -- Catalog Dict:\n%s" % (self._output.pformat(catalogDict)))
+        apid = catalogDict[da.model]
+        action = 'update Distributed Appliance'
+        url = '/api/server/v1/distributedAppliances'
+        self._output.log_debug("updateDA -- Calling _createorUpdateDistributedAppliance")
+        return (self._createorUpdateDistributedAppliance(daname=da.daname, mcname=da.mcname, mcid=mcid, apid=apid,
+                                                         model=da.model, swver=da.swname, vcid=vcid, vcname=da.vcname,
+                                                         vctype=da.vctype, domainName=da.domainName,
+                                                         encapsulation=da.encapType, daid=daid))
 
     # Deploy a distributed appliance to NSX.  This process is only supported
     # in ISC through the REST API - you can not do this from the ISC GUI,
@@ -2460,8 +2574,10 @@ class ISC(object):
             filePath = urlparse(rstUrl).path
         pass
         fileName = os.path.basename(filePath)
-        ## base_path, fileName = os.path.split(filePath)
-        if rstUrl.endswith(fileName):
+
+        if (rstUrl.endswith('internalkeypair')):
+            pass     #it's for ssl key pair
+        elif rstUrl.endswith(fileName):
             pass
         elif rstUrl.endswith(r"/"):
             rstUrl += fileName
@@ -2571,6 +2687,13 @@ class ISC(object):
     #
     ##################################################
 
+    def deleteFC(self, model_name):
+        model_id = self.getSoftwareModelId(model_name)
+        swVersions = self.getSoftwareVersionsForModel(model_id)
+        for swVersionId in swVersions:
+            self.deleteSwModelVersion(model_id, swVersionId)
+
+        self.deleteSwModel(model_id)
 
     def getSoftwareModels(self):
         ##return( self.getAppliances() )
@@ -2581,6 +2704,12 @@ class ISC(object):
         return(mdl_info)
     pass
 
+    def getSoftwareModelId(self, model_name):
+        mdl_info = self.getAppliances()
+        self._output.log_debug("getSoftwareModels -- Software Models:\n%s" % (self._output.pformat(mdl_info)))
+        model_id = mdl_info[model_name]
+        return  model_id
+    pass
 
     def getSoftwareModelData(self, model_id):
         url = "/api/server/v1/catalog/%s" %(model_id)
@@ -2752,8 +2881,9 @@ class ISC(object):
         headers = 'JSON'
         action = "DeleteSoftwareVersion -- Model: %s" %(modelId)
         self._output.log_debug("deleteSecurityGroup\n -- Sending %s Request for Action: %s:\n -- IP Addr: \"%s\"\n -- Headers: \"%s\"\n -- Method: \"%s\"\n -- URL: \"%s\"\n\n -- Body:\n%s" %(method, action, self.iscaddr, headers, method, url, body))
-        data = self._osc_http_conn(method=method, url=url, action=action)
+        data = self._osc_http_conn(method=method, url=url, action=action, body=body)
     pass
+
 
 
     def deleteAllSwModelsAndVersions(self):
@@ -2777,7 +2907,7 @@ class ISC(object):
         pass
     pass
 
-    def gotVnfImage(self):
+    def gotVnfImage(self, swModel = None):
         action = 'VNFs Catalog query'
         url = '/api/server/v1/catalog'
         body = ''
@@ -2785,6 +2915,15 @@ class ISC(object):
         self._output.log_debug("gotVnfImage -- Calliing _isc_connection ...")
         data = self._isc_connection("GET", url, body, action)
         self._output.log_debug("gotVnfImage -- Returned '%s' from _isc_connection:\n%s" %(str(len(list(data)) > 0), data) )
+
+        if swModel != None:
+
+            if len(list(data))>= 1:
+                for val in data:
+                    if val['model'] == swModel:
+                        return True
+
+            return False
 
         return len(list(data)) > 0
 
@@ -2811,10 +2950,16 @@ class ISC(object):
         self._output.log_debug("getCertificates -- Calliing _isc_connection ...")
         data = self._isc_connection("GET", url, body, action)
         self._output.log_debug("getCertificates -- Returned %s certificates from _isc_connection:\n%s" %(len(list(data)), data))
+        #return dict value of key 'issuer'
+        return str(data[0]["issuer"])
 
-        return len(list(data))
 
-
+    def stringhas(self, str, substr):
+        if str.contains(substr):
+            self._output.log_debug("%s has %s" % str, substr)
+        else:
+            self._output.log_debug("%s has no %s" % str, substr)
+            
     def uploadCertificate(self, name, cert):
         action = 'upload ssl certificate'
         url = '/api/server/v1/serverManagement/sslcertificate'
@@ -2865,38 +3010,32 @@ class ISC(object):
         pass
     pass
 
-    '''
-    def uploadNvfImage(self, imgFile=None, applImageRootDir="/home/mounts/nfs-public/Appliance-Images"):
-        _funcargs = {'self':self, 'imgFile':imgFile, 'applImageRootDir':applImageRootDir }
-        self._output.log_debug("Enter uploadNvfImage -- Args:\n%s" %(self._output.pformat(_funcargs)))
-        imgPath = None
-        if os.path.isabs(imgFile):
-            imgPath = imgFile
-        else:
-            imgPath = "%s/%s" %(applImageRootDir, imgFile)
-        pass
+
+    def uploadSslKeypairImage(self, imgPath=None):
+        res = 0
+        _funcargs = {'self':self, 'imgPath':imgPath }
+        self._output.log_debug("Enter uploadSslKeypairImage -- Args:\n%s" %(self._output.pformat(_funcargs)))
+
         if not imgPath.endswith('.zip'):
-            self._output.log_error("uploadNvfImage -- Error: \"%s\" is not a zip file" %(imgPath))
+            self._output.log_error("uploadSslKeypairImage -- Error: \"%s\" is not a zip file" %(imgPath))
         pass
-        self._output.log_info("uploadNvfImage -- Image Path:  \"%s\"" %(imgPath))
-        nvf_upload_url = "/api/server/v1/catalog/import"
+        self._output.log_debug("uploadSslKeypairImage -- Image Path:  \"%s\"" %(imgPath))
+        rstUrl = "/api/server/v1/serverManagement/internalkeypair"
         if imgPath:
             imgName = os.path.basename(imgPath)
             if not os.path.exists(imgPath):
-                self._output.log_error("uploadNvfImage -- Error: Img File \"%s\" Not Found" %(imgPath))
-                raise Exception("uploadNvfImage -- Error: Img File \"%s\" Not Found" %(imgPath))
+                raise Exception("uploadSslKeypairImage -- Error: Img File \"%s\" Not Found" %(imgPath))
             pass
             if not len(imgPath):
-                self._output.log_error("uploadNvfImage -- Error: Img File \"%s\" is empty" %(imgPath))
-                raise Exception("uploadNvfImage -- Error: Img File \"%s\" is empty" %(imgPath))
+                raise Exception("uploadSslKeypairImage -- Error: Img File \"%s\" is empty" %(imgPath))
             pass
-            rstUrl = (nvf_upload_url + r"/" + imgName)
-            self._output.log_info("uploadNvfImage -- Begin Image Upload to OSC\n -- File: %s\n -- URL: %s" %(imgPath, rstUrl))
-            self.uploadFileToOvf(method="POST", rstUrl=rstUrl, filePath=imgPath)
-            self._output.log_info("uploadNvfImage -- Finished Image Upload to OSC\n -- File: %s\n -- URL: %s" %(imgPath, rstUrl))
+
+            self._output.log_debug("uploadSslKeypairImage -- Begin Image Upload to OSC\n -- File: %s\n -- URL: %s" %(imgPath, rstUrl))
+            res = self.uploadFileToOvf(method="POST", rstUrl=rstUrl, filePath=imgPath, srcFd=None)
+            self._output.log_debug("uploadSslKeypairImage -- Finished Image Upload to OSC\n -- File: %s\n -- URL: %s" %(imgPath, rstUrl))
+            return res
         pass
     pass
-    '''
 
     def getOscOvfPath(self, bldName=None, bldRootDir="/home/mounts/builds_host", bldBranch="trunk"):
         _funcargs = {'bldName':bldName, 'bldRootDir':bldRootDir, 'bldBranch':bldBranch }

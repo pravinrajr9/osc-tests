@@ -30,7 +30,7 @@ ${blank}=
 # MC
 ${mc-type}=  ISM
 ${mc-name}=  default-MC
-${mc-providerIP}=  10.3.205.105
+${mc-providerIP}=  ${vc-providerIP}
 ${mc-user}=  admin
 ${mc-pass}=  admin123
 ${mc-apikey}=
@@ -43,24 +43,34 @@ ${da-name}=  default-DA
 ${da-mcname}=  default-MC
 ${da-vcname}=  default-VC
 ${da-vctype}=  OPENSTACK
-#${da-model}=  IPS-VM100-VSS
-#${da-swname}=  8.3.100.19
-#${da-domainName}=  /My Company
-#${da-encapType}=  VLAN
-#${vnf-path}=  ../osc_resources/sensorsw_vm100-vss_8310019.zip
+
 ${da-model}=  CIRROS-TCPD
 ${da-swname}=  0.3.0.5000
 ${da-domainName}=  Default
 ${da-encapType}=  VLAN
 ${vnf-path}=  ../osc_resources/cirrosAppl-1nic.zip
+${sslkpair-path}=   ../osc_resources/SSLreplaceoriginal.zip
+${sslkpairx509-path}=   ../osc_resources/SSLosxx509test.zip
+${sslkpairx509pem-path}=   ../osc_resources/SSLoscx509test_x509pem.zip
+
+${da-model-2}=  CIRROS-TCPD-1
+${da-swname-2}=  0.3.0.6000
+${da-vcname-2}=  default-VC-2
+${vnf-2-path}=  ../osc_resources/cirrosAppl-2nic.zip
 
 # DS
 ${ds-name}=  default-DS
 ${ds-daname}=  default-DA
 ${ds-project}=  admin
 ${ds-region}=   RegionOne
-#${ds-selction}=  All
-${ds-selction}=  hosts:yc-newton-comp1
+
+${ds-selction}=  can be 'All' without the quotes or specific hosts like: hosts:compute-node-name
+${ds-selection-byhost}=  can be single host hosts:compute-node-name  or as a list with ',' as seperator hosts:compute-node-1,compute-node-2,...
+
+#next two are not needed for now:
+${ds-selection-byAZ}=  zone:    followed by a comma seperated list of availability zones
+${ds-selection-byHA}=  hostAggregate:  followed by a comma seperated list of host agregates
+
 
 ${ds-mgmt-net}=  mgmt-net
 ${ds-insp-net}=  insp-net

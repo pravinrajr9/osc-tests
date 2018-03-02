@@ -51,23 +51,35 @@ def getPathFromImage(relPath):
     Log.log_info("absolute path is: " + abs_path)
     return abs_path
 
-def gotVnfImage(osc):
-    return osc.gotVnfImage()
+def gotVnfImage(osc, swModel = None):
+    return osc.gotVnfImage(swModel)
 
-def uploadVnfImage(osc, imgPath=None):
-    if gotVnfImage(osc):
+def uploadVnfImage(osc, imgPath=None, swModel="CIRROS-TCPD"):
+    if gotVnfImage(osc, swModel):
         return 0, "VNF Already uploaded"
     fullPath = getPathFromImage(imgPath)
-
     res = 0
+
     try:
-        res = osc.uploadNvfImage( imgPath=fullPath)
+        res = osc.uploadNvfImage(imgPath=fullPath)
     except Exception as ex:
         err_info = datastructUtils.get_exception_info(ex)
         Log.log_error("uploadNvfImage(%s): %s" % (fullPath, Log.pformat(err_info)))
-        res=1
+        res = 1
 
     return res, "Uploading VNF"
+pass
+
+def uploadSslKeypairImage(osc, imgPath=None):
+    fullPath = getPathFromImage(imgPath)
+    res = 0
+    try:
+        res = osc.uploadSslKeypairImage( imgPath=fullPath)
+    except Exception as ex:
+        err_info = datastructUtils.get_exception_info(ex)
+        Log.log_error("uploadSslKeypairImage(%s): %s" % (fullPath, Log.pformat(err_info)))
+        res=1
+    return res, "Uploading SslKeypair"
 pass
 
 # exit if cannot find the specific tag
@@ -90,6 +102,7 @@ def getElement(tree, tag):
 def _get_virtualization_conns(osc, vcname=None, vcid=None, vcnames=None, vcids=None):
     return osc.getVirtualizationConnectors()
 pass
+
 
 
 
@@ -2304,6 +2317,7 @@ def set_field_in_da(op_type, da, field_type, field):
 
     if op_type == 'create':
         return ret_da, daTests.createDA, daTests.deleteDA, daTests.getDAs
+
     else:
         Log.log_abort("set_field_in_da()    This operation is not supported for DA yet")
 
@@ -3546,6 +3560,10 @@ def run_like_from_robot():
     log = get_log(1, True)
     osc = get_osc(osc_ip, osc_user, osc_pass)
     result =      daTests.getSgMbrs(osc, 'sg')
+
+    # uploading ssl keypair will reboot OSC so we commenting it out
+    #res = uploadSslKeypairImage(osc, "c:\\svn\\Automation\\osc_resources\\SSLreplaceoriginal.zip")
+    #Log.log_info("After uploadVnfImage Res=\"%s\"" % str(res))
 
     res = uploadVnfImage(osc, "c:\\svn\\Automation\\osc_resources\\cirrosAppl-1nic.zip")
     Log.log_info("After uploadVnfImage Res=\"%s\"" % str(res))
